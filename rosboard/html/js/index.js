@@ -16,6 +16,7 @@ importJsOnce("js/viewers/TimeSeriesPlotViewer.js");
 importJsOnce("js/viewers/PointCloud2Viewer.js");
 importJsOnce("js/viewers/ImuViewer.js");
 importJsOnce("js/viewers/JointStateViewer.js");
+importJsOnce("js/viewers/JoystickController.js");
 
 // GenericViewer must be last
 importJsOnce("js/viewers/GenericViewer.js");
