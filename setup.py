@@ -26,6 +26,7 @@ setup(
             'html/fonts/*', 
             'html/css/*',
             'html/css/images/*',
+            'html/images/*',
             'html/js/*',
             'html/js/viewers/*',
             'html/js/viewers/meta/*',
