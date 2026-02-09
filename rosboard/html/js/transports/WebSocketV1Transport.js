@@ -1,10 +1,11 @@
 class WebSocketV1Transport {
-    constructor({path, onOpen, onClose, onRosMsg, onTopics, onSystem}) {
+    constructor({path, onOpen, onClose, onRosMsg, onTopics, onActions, onSystem}) {
       this.path = path;
       this.onOpen = onOpen ? onOpen.bind(this) : null;
       this.onClose = onClose ? onClose.bind(this) : null;
       this.onMsg = onMsg ? onMsg.bind(this) : null;
       this.onTopics = onTopics ? onTopics.bind(this) : null;
+      this.onActions = onActions ? onActions.bind(this) : null;
       this.onSystem = onSystem ? onSystem.bind(this) : null;
       this.ws = null;
     }
@@ -48,6 +49,7 @@ class WebSocketV1Transport {
         }
         else if(wsMsgType === WebSocketV1Transport.MSG_MSG && that.onMsg) that.onMsg(data[1]);
         else if(wsMsgType === WebSocketV1Transport.MSG_TOPICS && that.onTopics) that.onTopics(data[1]);
+        else if(wsMsgType === WebSocketV1Transport.MSG_ACTIONS && that.onActions) that.onActions(data[1]);
         else if(wsMsgType === WebSocketV1Transport.MSG_SYSTEM && that.onSystem) that.onSystem(data[1]);
         else console.log("received unknown message: " + wsmsg.data);
       }
@@ -73,6 +75,7 @@ class WebSocketV1Transport {
   WebSocketV1Transport.MSG_SUB = "s";
   WebSocketV1Transport.MSG_SYSTEM = "y";
   WebSocketV1Transport.MSG_UNSUB = "u";
+  WebSocketV1Transport.MSG_ACTIONS = "a";
 
   WebSocketV1Transport.PING_SEQ= "s";
   WebSocketV1Transport.PONG_SEQ = "s";

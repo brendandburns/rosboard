@@ -91,6 +91,11 @@ class ROSBoardSocketHandler(tornado.websocket.WebSocketHandler):
                 for socket in cls.sockets:
                     if socket.ws_connection and not socket.ws_connection.is_closing():
                         socket.write_message(json_msg)
+            elif message[0] == ROSBoardSocketHandler.MSG_ACTIONS:
+                json_msg = json.dumps(message, separators=(',', ':'))
+                for socket in cls.sockets:
+                    if socket.ws_connection and not socket.ws_connection.is_closing():
+                        socket.write_message(json_msg)
             elif message[0] == ROSBoardSocketHandler.MSG_MSG:
                 topic_name = message[1]["_topic_name"]
                 json_msg = None
@@ -194,6 +199,7 @@ ROSBoardSocketHandler.MSG_TOPICS = "t";
 ROSBoardSocketHandler.MSG_SUB = "s";
 ROSBoardSocketHandler.MSG_SYSTEM = "y";
 ROSBoardSocketHandler.MSG_UNSUB = "u";
+ROSBoardSocketHandler.MSG_ACTIONS = "a";
 
 ROSBoardSocketHandler.PING_SEQ = "s";
 ROSBoardSocketHandler.PONG_SEQ = "s";

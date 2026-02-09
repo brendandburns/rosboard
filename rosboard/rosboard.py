@@ -203,6 +203,22 @@ class ROSBoardNode(object):
                 [ROSBoardSocketHandler.MSG_TOPICS, self.all_topics ]
             )
 
+            # all actions and their types as strings e.g. {"/navigate_to_pose": "nav2_msgs/action/NavigateToPose"}
+            self.all_actions = {}
+
+            if hasattr(rospy, 'get_action_names_and_types'):
+                for action_tuple in rospy.get_action_names_and_types():
+                    action_name = action_tuple[0]
+                    action_type = action_tuple[1]
+                    if type(action_type) is list:
+                        action_type = action_type[0] # ROS2
+                    self.all_actions[action_name] = action_type
+
+            self.event_loop.add_callback(
+                ROSBoardSocketHandler.broadcast,
+                [ROSBoardSocketHandler.MSG_ACTIONS, self.all_actions ]
+            )
+
             for topic_name in self.remote_subs:
                 if len(self.remote_subs[topic_name]) == 0:
                     continue

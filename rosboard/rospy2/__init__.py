@@ -149,6 +149,13 @@ def spin():
 def get_published_topics(namespace = '/'):
     return [[el[0], el[1][0]] for el in _node.get_topic_names_and_types()]
 
+def get_action_names_and_types():
+    """Get all available action names and their types."""
+    try:
+        return [[el[0], el[1][0]] for el in _node.get_action_names_and_types()]
+    except Exception:
+        return []
+
 def get_caller_id():
     import inspect # import here since this function is highly unlikely to be used
     logwarn_once("get_caller_id() not supported in ROS2. taking a guess by selecting the first publisher. highly recommended to not do this!")

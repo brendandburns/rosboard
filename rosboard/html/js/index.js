@@ -204,6 +204,70 @@ function addTopicTreeToNav(topicTree, el, level = 0, path = "") {
   });
 }
 
+let currentActions = {};
+let currentActionsStr = "";
+
+let onActions = function(actions) {
+  // check if actions has actually changed, if not, don't do anything
+  let newActionsStr = JSON.stringify(actions);
+  if(newActionsStr === currentActionsStr) return;
+  currentActions = actions;
+  currentActionsStr = newActionsStr;
+  
+  let actionTree = treeifyPaths(Object.keys(actions));
+  
+  $("#topics-nav-actions").empty();
+  
+  if(actionTree.length > 0) {
+    addActionTreeToNav(actionTree[0], $('#topics-nav-actions'));
+  }
+}
+
+function addActionTreeToNav(actionTree, el, level = 0, path = "") {
+  actionTree.children.sort((a, b) => {
+    if(a.name>b.name) return 1;
+    if(a.name<b.name) return -1;
+    return 0;
+  });
+  actionTree.children.forEach((subTree, i) => {
+    let subEl = $('<div></div>')
+    .css(level < 1 ? {} : {
+      "padding-left": "0pt",
+      "margin-left": "12pt",
+      "border-left": "1px dashed #808080",
+    })
+    .appendTo(el);
+    let fullActionName = path + "/" + subTree.name;
+    let actionType = currentActions[fullActionName];
+    if(actionType) {
+      // Actions are displayed but not clickable since we don't have action viewers yet
+      $('<a></a>')
+        .addClass("mdl-navigation__link")
+        .css({
+          "padding-left": "12pt",
+          "margin-left": 0,
+          opacity: 0.7,
+          cursor: "default",
+        })
+        .attr("title", actionType)
+        .text(subTree.name)
+        .appendTo(subEl);
+    } else {
+      $('<a></a>')
+      .addClass("mdl-navigation__link")
+      .attr("disabled", "disabled")
+      .css({
+        "padding-left": "12pt",
+        "margin-left": 0,
+        opacity: 0.5,
+      })
+      .text(subTree.name)
+      .appendTo(subEl);
+    }
+    addActionTreeToNav(subTree, subEl, level + 1, path + "/" + subTree.name);
+  });
+}
+
 function initSubscribe({topicName, topicType}) {
   console.log( "Subscribing to " + topicName + " of type " + topicType);
   // creates a subscriber for topicName
@@ -239,6 +303,7 @@ function initDefaultTransport() {
     onOpen: onOpen,
     onMsg: onMsg,
     onTopics: onTopics,
+    onActions: onActions,
     onSystem: onSystem,
   });
   currentTransport.connect();
