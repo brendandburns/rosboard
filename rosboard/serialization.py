@@ -129,7 +129,7 @@ def dict2ros(data, msg_class):
             setattr(msg, field, dict2ros(value, type(current_value)))
         elif isinstance(value, list):
             # Check if it's a list of nested messages
-            if len(value) > 0 and all(isinstance(item, dict) for item in value):
+            if len(value) > 0 and isinstance(value[0], dict) and all(isinstance(item, dict) for item in value[1:]):
                 # Need to determine the element type
                 # For ROS2, we can get the type from field_types
                 if hasattr(msg, "get_fields_and_field_types"):
@@ -144,6 +144,8 @@ def dict2ros(data, msg_class):
                             if not module_name.endswith(".msg"):
                                 module_name = f"{module_name}.msg"
                             class_name = parts[2]
+                            if not class_name:
+                                raise ValueError(f"Invalid ROS type {inner_type}")
                             element_class = getattr(importlib.import_module(module_name), class_name)
                             setattr(msg, field, [dict2ros(v, element_class) for v in value])
                         except (AttributeError, ImportError, ModuleNotFoundError, ValueError):
