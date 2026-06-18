@@ -1,6 +1,6 @@
-import importlib
 import array
 import base64
+import importlib
 import numpy as np
 import rosboard.compression
 
@@ -89,6 +89,7 @@ def ros2dict(msg):
     return output
 
 def _coerce_value(current_value, value):
+    """Convert a value to the current field type, or return it unchanged."""
     if current_value is None:
         return value
     try:
@@ -128,7 +129,7 @@ def dict2ros(data, msg_class):
             setattr(msg, field, dict2ros(value, type(current_value)))
         elif isinstance(value, list):
             # Check if it's a list of nested messages
-            if len(value) > 0 and isinstance(value[0], dict):
+            if len(value) > 0 and all(isinstance(item, dict) for item in value):
                 # Need to determine the element type
                 # For ROS2, we can get the type from field_types
                 if hasattr(msg, "get_fields_and_field_types"):
@@ -141,7 +142,7 @@ def dict2ros(data, msg_class):
                             parts = inner_type.replace("/", ".").rpartition(".")
                             module_name = parts[0]
                             if not module_name.endswith(".msg"):
-                                module_name = module_name + ".msg"
+                                module_name = f"{module_name}.msg"
                             class_name = parts[2]
                             element_class = getattr(importlib.import_module(module_name), class_name)
                             setattr(msg, field, [dict2ros(v, element_class) for v in value])
@@ -160,7 +161,7 @@ def dict2ros(data, msg_class):
                         setattr(msg, field, base64.b64decode(value))
                     else:
                         setattr(msg, field, bytes(value))
-                elif hasattr(current_value, '__len__') and hasattr(current_value, '__iter__'):
+                elif not isinstance(current_value, str) and hasattr(current_value, '__len__') and hasattr(current_value, '__iter__'):
                     # Array-like field
                     setattr(msg, field, _coerce_value(current_value, value))
                 else:
