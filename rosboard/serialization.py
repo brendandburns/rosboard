@@ -88,11 +88,19 @@ def ros2dict(msg):
 
     return output
 
+def _coerce_value(current_value, value):
+    if current_value is None:
+        return value
+    try:
+        return type(current_value)(value)
+    except (TypeError, ValueError):
+        return value
+
 def dict2ros(data, msg_class):
     """
     Converts a JSON-serializable dict back into a ROS message.
     """
-    if type(data) in (str, bool, int, float):
+    if isinstance(data, (str, bool, int, float)):
         return data
 
     if data is None:
@@ -137,7 +145,7 @@ def dict2ros(data, msg_class):
                             class_name = parts[2]
                             element_class = getattr(importlib.import_module(module_name), class_name)
                             setattr(msg, field, [dict2ros(v, element_class) for v in value])
-                        except Exception:
+                        except (AttributeError, ImportError, ModuleNotFoundError, ValueError):
                             setattr(msg, field, value)
                     else:
                         setattr(msg, field, value)
@@ -154,14 +162,14 @@ def dict2ros(data, msg_class):
                         setattr(msg, field, bytes(value))
                 elif hasattr(current_value, '__len__') and hasattr(current_value, '__iter__'):
                     # Array-like field
-                    setattr(msg, field, type(current_value)(value) if current_value is not None else value)
+                    setattr(msg, field, _coerce_value(current_value, value))
                 else:
                     setattr(msg, field, value)
         elif isinstance(value, str) and isinstance(current_value, (bytes, bytearray)):
             # Base64 encoded bytes
             setattr(msg, field, base64.b64decode(value))
         else:
-            setattr(msg, field, type(current_value)(value) if current_value is not None else value)
+            setattr(msg, field, _coerce_value(current_value, value))
 
     return msg
 
