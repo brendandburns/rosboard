@@ -1,3 +1,4 @@
+import importlib
 import array
 import base64
 import numpy as np
@@ -129,7 +130,6 @@ def dict2ros(data, msg_class):
                         # e.g., "sequence<geometry_msgs/msg/PoseStamped>"
                         inner_type = field_type_str.replace("sequence<", "").rstrip(">")
                         try:
-                            import importlib
                             parts = inner_type.replace("/", ".").rpartition(".")
                             module_name = parts[0]
                             if not module_name.endswith(".msg"):
@@ -154,14 +154,14 @@ def dict2ros(data, msg_class):
                         setattr(msg, field, bytes(value))
                 elif hasattr(current_value, '__len__') and hasattr(current_value, '__iter__'):
                     # Array-like field
-                    setattr(msg, field, type(current_value)(value) if type(current_value) != type(None) else value)
+                    setattr(msg, field, type(current_value)(value) if current_value is not None else value)
                 else:
                     setattr(msg, field, value)
         elif isinstance(value, str) and isinstance(current_value, (bytes, bytearray)):
             # Base64 encoded bytes
             setattr(msg, field, base64.b64decode(value))
         else:
-            setattr(msg, field, type(current_value)(value))
+            setattr(msg, field, type(current_value)(value) if current_value is not None else value)
 
     return msg
 
